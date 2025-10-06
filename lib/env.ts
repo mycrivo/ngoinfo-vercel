@@ -12,6 +12,9 @@ const clientSchema = z.object({
   NEXT_PUBLIC_API_TIMEOUT_MS: z.string().transform(Number).pipe(z.number().positive()).default("15000"),
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
   NEXT_PUBLIC_VERCEL_ANALYTICS_ID: z.string().optional(),
+  
+  // Stripe - Publishable key (safe to expose)
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
 });
 
 // Server-side variables (never exposed to browser)
@@ -27,6 +30,10 @@ const serverSchema = z.object({
   // Observability
   SENTRY_DSN: z.string().url().optional(),
   SENTRY_ENVIRONMENT: z.string().optional(),
+  
+  // Stripe - Server-side keys (NEVER expose to client)
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
   
   // Feature flags (server-side evaluation)
   USE_MSW: z.string().transform(val => val === "true").default("false"),
@@ -55,6 +62,7 @@ function validateEnv() {
     NEXT_PUBLIC_API_TIMEOUT_MS: process.env.NEXT_PUBLIC_API_TIMEOUT_MS,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_VERCEL_ANALYTICS_ID: process.env.NEXT_PUBLIC_VERCEL_ANALYTICS_ID,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   };
 
   const clientResult = clientSchema.safeParse(clientEnv);

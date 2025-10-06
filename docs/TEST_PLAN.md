@@ -631,4 +631,297 @@ getTelemetryEvents()
 - [ ] Session persists across page reloads
 - [ ] Error fallback UI is branded and accessible
 
+## V4 - Monetisation Shell + Dashboard Skeleton
+
+### Pricing Page (`/pricing`)
+
+**Visual QA:**
+```bash
+1. Navigate to http://localhost:3000/pricing
+2. ✓ 3 plan cards displayed in grid (mobile: stacks vertically)
+3. ✓ Growth plan has "Most Popular" badge at top
+4. ✓ Growth plan has 2px primary blue border
+5. ✓ Growth plan elevation larger (shadow more prominent)
+6. ✓ Pricing: Starter $19, Growth $39, Impact+ $79
+7. ✓ Features list with green checkmarks (✓)
+8. ✓ Manual review badge on Growth & Impact+ (green background)
+9. ✓ All buttons: "Start 2-Day Free Trial"
+10. ✓ Trial info card below plans (3 columns: 🎯 ⏱️ 📥)
+11. ✓ No hardcoded hex values (all use semantic tokens)
+```
+
+**Brand Consistency:**
+- ✓ Uses Card, Button components from UI kit
+- ✓ Typography: Poppins font, semantic sizes
+- ✓ Colors: --colour-primary for prices/borders, --colour-success for checkmarks
+- ✓ Spacing: 8pt system, proper gutters
+
+**Trial Activation:**
+```bash
+1. Click "Start 2-Day Free Trial" on any plan
+2. ✓ Redirects to /dashboard
+3. Check localStorage:
+   # ngo_trial = { active: true, started_at, expires_at, proposals_used: 0, proposals_limit: 1 }
+   # ngo_plan = "growth" (or selected plan)
+4. Console: [track] monetisation:trial_started
+```
+
+### Dashboard with Trial/Quota
+
+**Trial Banner (Active):**
+```bash
+1. After starting trial, on /dashboard:
+2. ✓ Info banner at top: "Free Trial Active"
+3. ✓ Shows hours remaining: "47h remaining" (updates every minute)
+4. ✓ Shows quota: "1 of 1 proposals left"
+5. ✓ "Upgrade Now" button (secondary) → links to /pricing
+```
+
+**Plan Badge:**
+```bash
+1. ✓ Top-right corner of dashboard
+2. ✓ Star icon + "Growth Plan (Trial)"
+3. ✓ Primary border (1px) + subtle background
+4. ✓ Uses semantic tokens for colors
+```
+
+**Quota Progress Card:**
+```bash
+1. ✓ Card below banner: "Proposal Quota"
+2. ✓ Shows "0 / 1 used"
+3. ✓ Progress bar: 
+   - 0% used → Primary blue
+   - After 1 proposal → 100% → Red
+4. ✓ Text: "1 proposals remaining this month"
+5. ✓ When quota = 0 → "Upgrade →" link appears
+```
+
+**Stats Grid:**
+```bash
+1. ✓ 3 cards: Active Proposals (0), Funding Opportunities (—), Success Rate (—)
+2. ✓ Uses semantic colors (primary, secondary, success)
+3. ✓ Placeholder text: "Coming in V5", "Track your wins"
+```
+
+**Quick Actions Sidebar:**
+```bash
+1. ✓ 4 buttons in card:
+   - 🎯 GrantPilot (disabled, "Coming Soon")
+   - 👤 Profile (disabled)
+   - ⚙️ Settings (disabled)
+   - 💳 Manage Plan (enabled) → /pricing
+2. ✓ Disabled buttons have 60% opacity
+```
+
+### Quota Consumption Flow
+
+**Simulate Proposal Generation:**
+```bash
+# In browser DevTools console:
+import { consumeProposal } from '@/lib/quota';
+consumeProposal();
+
+1. ✓ Returns true (success)
+2. Console: [track] monetisation:proposal_consumed
+3. localStorage: ngo_trial.proposals_used = 1
+4. Dashboard refreshes (every minute or manual):
+   - Quota card: "1 / 1 used"
+   - Progress bar: 100%, red color
+   - Banner still shows "0 of 1 proposals left"
+```
+
+**Quota Exceeded:**
+```bash
+# Try to consume again:
+consumeProposal();
+
+1. ✓ Returns false (blocked)
+2. Console: [track] monetisation:quota_exceeded
+3. Dashboard:
+   - Warning banner: "Quota Exceeded — You've used all 1 proposals this month"
+   - "Upgrade Plan" button (primary) → /pricing
+```
+
+### Trial Expiry Flow
+
+**Simulate Expiry:**
+```bash
+# In browser DevTools console:
+import { simulateTrialExpiry } from '@/lib/quota';
+simulateTrialExpiry();
+
+1. ✓ localStorage: ngo_trial.expires_at = (1 second ago)
+2. ✓ ngo_trial.active = false
+3. Console: [track] monetisation:trial_expiry_simulated
+4. Reload dashboard:
+   - Error banner: "Trial Expired — Subscribe to continue generating proposals"
+   - "View Plans" button (primary) → /pricing
+```
+
+**Natural Expiry (48 Hours):**
+```bash
+# Wait 48 hours OR manually set expires_at to past date
+1. Dashboard auto-detects expiry (checks every minute)
+2. ✓ Trial banner disappears
+3. ✓ Expired banner appears
+4. ✓ Quota card shows 0 limit
+5. Console: [track] monetisation:trial_expired
+```
+
+### Stripe Placeholders
+
+**Checkout Flow (Mock):**
+```bash
+# In browser DevTools console:
+import { checkout } from '@/lib/stripe';
+await checkout('growth');
+
+1. Console logs:
+   [Stripe Placeholder] checkout() called { planId: 'growth' }
+   [Stripe Placeholder] Checkout session would be created here
+   [Stripe Placeholder] User would be redirected to Stripe checkout
+2. Console: [track] monetisation:checkout_initiated
+3. Returns: { success: false, error: "Stripe integration not yet implemented..." }
+```
+
+**Billing Portal (Mock):**
+```bash
+import { manageBilling } from '@/lib/stripe';
+await manageBilling();
+
+1. Console logs:
+   [Stripe Placeholder] manageBilling() called
+   [Stripe Placeholder] Customer portal session would be created here
+2. Console: [track] monetisation:billing_portal_opened
+3. Returns: { success: false, error: "Billing portal not yet implemented..." }
+```
+
+### Telemetry Events
+
+**Full Trial Flow Events:**
+```bash
+# Start trial → Use quota → Expire
+getTelemetryEvents()
+
+Should include:
+- monetisation:trial_started { plan, trial_days, trial_proposals }
+- monetisation:proposal_consumed { is_trial: true, proposals_used, proposals_limit }
+- monetisation:quota_exceeded { plan_id, proposals_used, proposals_limit }
+- monetisation:trial_expired { proposals_used, proposals_limit }
+- monetisation:checkout_initiated { plan_id } (if tested)
+```
+
+### Responsive Behavior
+
+**Mobile (375px):**
+```bash
+# DevTools > iPhone SE
+1. ✓ Pricing cards stack vertically (1 column)
+2. ✓ Trial banner buttons wrap to new line
+3. ✓ Dashboard stats grid: 1 column on mobile, 3 on desktop
+4. ✓ Quota progress bar maintains readability
+5. ✓ Plan badge moves below header on very small screens
+```
+
+**Tablet (768px):**
+```bash
+# DevTools > iPad
+1. ✓ Pricing cards: 2 columns (3rd wraps)
+2. ✓ Dashboard: 2-column layout for activity/sidebar
+```
+
+**Desktop (≥1200px):**
+```bash
+1. ✓ Pricing cards: 3 columns, equal width
+2. ✓ Dashboard: Proper spacing, max-width 1280px
+3. ✓ All hover states work correctly
+```
+
+### Edge Cases & Error Handling
+
+**Multiple Trial Starts:**
+```bash
+1. Start trial (localStorage: ngo_trial created)
+2. Visit /pricing again → Click "Start Trial"
+3. ✓ Does NOT create new trial
+4. ✓ Uses existing trial (same expires_at)
+5. ✓ Redirects to dashboard
+```
+
+**LocalStorage Cleared:**
+```bash
+1. Clear all localStorage
+2. Visit /dashboard
+3. ✓ Shows "Loading..." briefly
+4. ✓ Then shows no trial/plan state
+5. ✓ Quota card shows 0/0
+6. ✓ No error banners (graceful degradation)
+```
+
+**Quota Consumption Edge Cases:**
+```bash
+# Consume when already at limit:
+1. consumeProposal() when proposals_used === proposals_limit
+2. ✓ Returns false
+3. ✓ Does NOT increment proposals_used
+4. ✓ Logs quota_exceeded event
+
+# Consume when trial expired:
+1. simulateTrialExpiry()
+2. consumeProposal()
+3. ✓ Returns false (trial inactive, quota = 0)
+```
+
+### Browser DevTools Helpers
+
+**Debug Functions:**
+```bash
+# Check quota status
+import { getQuotaStatus } from '@/lib/quota';
+getQuotaStatus()
+# Returns: { plan_id, proposals_used, proposals_limit, quota_remaining, is_trial, can_generate }
+
+# Check trial status
+import { getTrialStatus } from '@/lib/quota';
+getTrialStatus()
+# Returns: { active, started_at, expires_at, hours_remaining, proposals_used, proposals_limit }
+
+# Reset trial (for testing)
+import { resetTrial } from '@/lib/quota';
+resetTrial()
+# Clears: ngo_trial, ngo_plan, ngo_quota
+```
+
+### Accessibility
+
+**Pricing Page:**
+- ✓ Plan cards keyboard navigable (Tab order: Starter → Growth → Impact+)
+- ✓ "Start Trial" buttons have 44×44px tap target
+- ✓ Focus rings visible on all interactive elements
+- ✓ Checkmark icons have aria-hidden (decorative)
+- ✓ Feature lists use proper semantic HTML (`<ul>`, `<li>`)
+
+**Dashboard:**
+- ✓ Banner dismiss buttons keyboard accessible
+- ✓ Progress bar has aria-label describing current state
+- ✓ Quota percentage readable (color + text, not color alone)
+- ✓ Disabled buttons have aria-disabled attribute
+
+### Definition of Done Checklist
+
+- [ ] /pricing shows 3 branded plan cards
+- [ ] Growth plan has "Most Popular" badge and primary border
+- [ ] "Start Trial" creates trial and redirects to /dashboard
+- [ ] Dashboard shows trial countdown (hours remaining)
+- [ ] Quota progress bar displays correctly (0% → 100%)
+- [ ] consumeProposal() reduces quota and updates UI
+- [ ] Quota = 0 shows "Upgrade" CTA
+- [ ] simulateTrialExpiry() shows expired banner
+- [ ] Stripe placeholders log to console
+- [ ] All telemetry events tracked
+- [ ] No hardcoded hex values (all semantic tokens)
+- [ ] Responsive on mobile/tablet/desktop
+- [ ] localStorage persists trial/quota state
+- [ ] No linter errors
+
 

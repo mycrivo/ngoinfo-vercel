@@ -542,4 +542,321 @@ track("error:boundary_caught", {
 - [Web Analytics Best Practices](https://web.dev/vitals/)
 - [NextAuth.js](https://next-auth.js.org/) (for future integration)
 
+## ADR-007: Monetisation Shell & Trial Framework
+
+**Date:** 2025-10-06  
+**Status:** Accepted  
+**Context:** Establish pricing tiers, trial logic, and Stripe integration foundation before live billing.
+
+### Motivation
+We need to:
+1. Define clear pricing tiers aligned with NGO market segments
+2. Offer a risk-free trial experience (no credit card required)
+3. Track proposal quotas and enforce limits
+4. Prepare Stripe integration infrastructure for Live Billing cluster
+5. Build dashboard UI that communicates plan value and drives upgrades
+
+### Decisions
+
+#### 1. Pricing Tiers (lib/plans.ts)
+
+**Three Plans:**
+
+| Plan | Price | Proposals/Mo | Manual Review | Target |
+|------|-------|--------------|---------------|--------|
+| **Starter** | $19 | 2 | ❌ | Small NGOs, getting started |
+| **Growth** | $39 | 5 | ✅ | Growing orgs, scaling impact (Featured) |
+| **Impact+** | $79 | 7 | ✅ | Enterprise, maximum success |
+
+**Plan Configuration:**
+```typescript
+interface Plan {
+  id: 'starter' | 'growth' | 'impact_plus';
+  name: string;
+  price: number; // USD per month
+  proposals_per_month: number;
+  manual_review_included: boolean;
+  trial_days: 2;
+  trial_proposals: 1;
+  stripe_price_id: string; // placeholder for now
+  tagline: string;
+  is_featured?: boolean;
+  features: string[];
+}
+```
+
+**Rationale:**
+- **Starter ($19):** Entry-level for budget-conscious NGOs
+- **Growth ($39):** Sweet spot with expert review; marked "Most Popular"
+- **Impact+ ($79):** Premium for organizations needing max proposals + white-glove service
+- All plans include 2-day trial with 1 free proposal
+- Manual review differentiator for higher tiers drives perceived value
+
+#### 2. Trial Logic (lib/quota.ts)
+
+**2-Day Free Trial:**
+- **Duration:** 48 hours from activation
+- **Quota:** 1 proposal generation
+- **No Credit Card:** Frictionless signup
+- **Countdown:** Displayed in dashboard (hours remaining)
+- **Storage:** localStorage (will migrate to backend in Live Billing)
+
+**Quota Tracking:**
+```typescript
+interface TrialStatus {
+  active: boolean;
+  started_at: string | null;
+  expires_at: string | null;
+  hours_remaining: number;
+  proposals_used: number;
+  proposals_limit: number;
+}
+
+interface QuotaStatus {
+  plan_id: PlanId | null;
+  proposals_used: number;
+  proposals_limit: number;
+  quota_remaining: number;
+  is_trial: boolean;
+  can_generate: boolean;
+}
+```
+
+**Functions:**
+- `startTrial()` → Activates trial, sets expiry
+- `getTrialStatus()` → Returns current trial state
+- `getQuotaStatus()` → Returns proposal quota
+- `consumeProposal()` → Decrements quota, enforces limits
+- `upgradePlan(planId)` → Mock upgrade (clears trial, sets plan)
+- `simulateTrialExpiry()` → Testing helper
+
+**Enforcement:**
+- Trial expires automatically after 48 hours
+- Quota prevents generation when `proposals_used >= proposals_limit`
+- Dashboard shows upgrade CTAs when quota exhausted or trial expired
+
+#### 3. Pricing Page (/pricing)
+
+**Branded UI:**
+- 3-column grid (mobile stacks)
+- Featured badge on Growth plan
+- Card elevation: Growth `lg`, others `md`
+- Primary border (2px) on featured plan
+- Check icons (✓) for feature lists
+- Manual review badge for Growth/Impact+
+
+**Trial CTA:**
+- Button: "Start 2-Day Free Trial"
+- onClick → `startTrial()` → redirect to /dashboard
+- No payment collection at this stage
+
+**Information:**
+- Trial details card explaining process
+- FAQ footer with support email
+- Note: "Download after upgrade" (view-only during trial)
+
+#### 4. Dashboard Shell (app/dashboard/page.tsx)
+
+**Trial/Plan Banner:**
+- **Active Trial:** Info banner with countdown, quota, "Upgrade Now" button
+- **Quota Exceeded:** Warning banner, "Upgrade Plan" CTA
+- **Trial Expired:** Error banner, "View Plans" CTA
+
+**Plan Badge:**
+- Top-right corner
+- Shows current plan name + "(Trial)" if active
+- Star icon + primary border
+
+**Quota Progress:**
+- Card with visual progress bar
+- Color-coded: 
+  - < 80%: Primary blue
+  - 80-100%: Warning yellow
+  - 100%: Error red
+- Shows "X / Y used" and "Z remaining"
+
+**Quick Actions Sidebar:**
+- GrantPilot (disabled, "Coming Soon")
+- Profile (disabled)
+- Settings (disabled)
+- **Manage Plan** → Active, links to /pricing
+
+**Stats Grid:**
+- Active Proposals: Placeholder (0)
+- Funding Opportunities: "Coming in V5"
+- Success Rate: Placeholder
+
+#### 5. Stripe Integration (lib/stripe.ts)
+
+**Placeholder Functions:**
+```typescript
+checkout(planId) → Creates checkout session (mock)
+manageBilling() → Opens customer portal (mock)
+getSubscriptionStatus() → Returns subscription state (mock)
+handleCheckoutSuccess(sessionId) → Webhook handler (mock)
+handleSubscriptionCanceled(subscriptionId) → Webhook handler (mock)
+```
+
+**Environment Variables (lib/env.ts):**
+```bash
+# Client-side (safe to expose)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
+
+# Server-side (NEVER expose)
+STRIPE_SECRET_KEY=sk_test_placeholder
+STRIPE_WEBHOOK_SECRET=whsec_placeholder
+```
+
+**Current Behavior:**
+- All functions log to console
+- Return error: "Not yet implemented"
+- Track telemetry events (`monetisation:checkout_initiated`, etc.)
+- No actual Stripe API calls
+
+**Future Integration (Live Billing):**
+1. Create Stripe account, get real keys
+2. Implement `/api/stripe/create-checkout-session` endpoint
+3. Load Stripe.js client library
+4. Handle webhooks: `checkout.session.completed`, `customer.subscription.*`
+5. Update database with subscription status
+6. Send confirmation emails
+
+### Trade-offs
+
+**Pros:**
+- Frictionless trial experience (no payment upfront)
+- Clear value ladder across 3 tiers
+- Mock quota enforcement tests UX before backend
+- Stripe placeholders allow frontend iteration
+- Dashboard clearly communicates plan value + upgrade path
+
+**Cons:**
+- localStorage quota not secure (easily bypassed in dev tools)
+- Trial/quota not synced with backend (will fix in Live Billing)
+- No actual payment collection yet
+- Quota resets don't follow calendar month (placeholder logic)
+
+### Implementation Details
+
+**File Structure:**
+```
+lib/
+  ├── plans.ts          # Plan configuration
+  ├── quota.ts          # Trial & quota logic
+  └── stripe.ts         # Placeholder integration
+
+app/
+  ├── pricing/page.tsx  # Pricing page
+  └── dashboard/page.tsx # Dashboard with quota UI
+```
+
+**Telemetry Events:**
+```typescript
+monetisation:trial_started
+monetisation:trial_expired
+monetisation:proposal_consumed
+monetisation:quota_exceeded
+monetisation:plan_upgraded
+monetisation:checkout_initiated
+monetisation:billing_portal_opened
+```
+
+### Testing Approach
+
+**Manual Tests:**
+1. Visit /pricing → See 3 plans, Growth featured
+2. Click "Start Trial" → Redirects to /dashboard
+3. Check localStorage: `ngo_trial`, `ngo_plan`, `ngo_quota`
+4. Dashboard shows trial countdown + quota progress
+5. Simulate proposal generation → `consumeProposal()`
+6. Quota reaches 0 → "Upgrade" CTA appears
+7. Simulate expiry → `simulateTrialExpiry()`
+8. Trial expired banner appears
+9. Console logs Stripe placeholder calls
+
+**Edge Cases:**
+- Multiple trial starts (should use existing trial, not create new)
+- Trial expiry exactly at 48 hours
+- Quota consumption when limit reached (blocked)
+- Dashboard refresh maintains trial/quota state
+
+### Alternatives Considered
+
+**Option A: 7-Day Trial with More Proposals**
+- Rejected: Longer trial delays conversion; 2 days creates urgency
+- 1 proposal sufficient to demonstrate value
+
+**Option B: Credit Card Required for Trial**
+- Rejected: Adds friction; NGOs sensitive to upfront payment
+- No-CC trial increases conversion rate
+
+**Option C: Freemium Forever (Limited Features)**
+- Rejected: Doesn't align with revenue model
+- Premium content (expert review) requires paid tiers
+
+**Option D: Real Stripe Integration Now**
+- Deferred: Backend not ready for payment processing
+- Mock allows frontend iteration independently
+
+### Migration Path
+
+**Phase 1 (Current - V4):**
+- ✅ Plan configuration + pricing page
+- ✅ Mock trial logic (localStorage)
+- ✅ Dashboard quota UI
+- ✅ Stripe placeholders
+
+**Phase 2 (Live Billing Cluster):**
+- Implement Stripe API endpoints (`/api/stripe/*`)
+- Database schema for subscriptions
+- Webhook handlers for lifecycle events
+- Migrate trial/quota tracking to backend
+- Email notifications (trial expiring, payment received)
+- Customer portal for self-service billing
+
+**Phase 3 (Future Enhancements):**
+- Annual billing (discounted)
+- Add-ons (extra proposals, priority support)
+- Enterprise custom pricing
+- Referral credits
+- Non-profit discount program
+
+### Security & Compliance
+
+**Current (Mock):**
+- ⚠️ Quota bypass possible (localStorage manipulation)
+- ⚠️ No payment data handled (Stripe not integrated)
+- ✅ No sensitive data stored client-side
+
+**Future (Live Billing):**
+- ✅ PCI compliance via Stripe (no card data touches our servers)
+- ✅ Webhook signature verification
+- ✅ Server-side quota enforcement
+- ✅ Secure session management (httpOnly cookies)
+- ✅ Audit logging for billing events
+- ✅ GDPR compliance for EU customers (Stripe handles)
+
+### Pricing Rationale
+
+**Market Research:**
+- Starter ($19): Competitive with basic grant tools
+- Growth ($39): Matches mid-tier SaaS (incl. expert review adds value)
+- Impact+ ($79): Premium positioning, justified by volume + white-glove
+
+**Value Metrics:**
+- Average grant: $10K-$50K
+- If 1 proposal succeeds → 200-500x ROI on subscription
+- Manual review (Growth+) increases success rate ~30%
+
+**Trial Conversion:**
+- Goal: 15-20% trial → paid conversion
+- 2-day urgency + 1 proposal demonstrates value
+- Upgrade path: Dashboard banners + email reminders (future)
+
+### References
+- [Stripe Documentation](https://stripe.com/docs)
+- [Stripe Checkout](https://stripe.com/docs/payments/checkout)
+- [Stripe Webhooks](https://stripe.com/docs/webhooks)
+- [SaaS Pricing Best Practices](https://www.priceintelligently.com/blog/saas-pricing-models)
+
 

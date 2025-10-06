@@ -404,4 +404,231 @@ Check:
 - [ ] Dark mode seam prepared (data-theme attribute)
 - [ ] No linter errors
 
+## V3 - Auth UX + Error & Telemetry Framework
+
+### Mock Authentication Flow
+
+**Login Page (`/login`):**
+```bash
+1. Navigate to http://localhost:3000/login
+2. ✓ Branded login form displays (Card, Inputs, Button from UI kit)
+3. ✓ Form uses NGOInfo design tokens (primary blue, etc.)
+4. ✓ Empty submission → inline Banner error: "Email and password are required"
+5. ✓ Valid submission → 80% success → redirect to /dashboard after 1s
+6. ✓ 20% random failure → Banner error: "Invalid credentials"
+7. ✓ Loading state → button shows "Signing in..." and is disabled
+```
+
+**Session Persistence:**
+```bash
+1. After successful login → check localStorage
+   # gp_session = "true"
+   # gp_session_email = user@example.com
+2. Refresh /dashboard → still logged in (session persists)
+3. Navigate away and back → session retained
+```
+
+**Logout Page (`/logout`):**
+```bash
+1. Navigate to http://localhost:3000/logout
+2. ✓ Branded confirmation screen displays
+3. ✓ Two buttons: "Cancel" (secondary) and "Sign Out" (primary)
+4. Click "Sign Out":
+   - localStorage cleared (gp_session removed)
+   - Redirects to / after 500ms delay
+5. Click "Cancel" → returns to previous page
+```
+
+### Error Boundaries
+
+**Global Error Boundary:**
+```bash
+# Trigger global error by temporarily throwing in a component:
+# In app/page.tsx, add: throw new Error("Test global error");
+
+1. Error thrown → Global ErrorBoundary catches
+2. ✓ Full-page fallback renders:
+   - ⚠️ icon displayed
+   - "Something Went Wrong" heading
+   - User-friendly message
+   - "Try Again" and "Go Home" buttons
+3. ✓ Development: Error details shown in card
+4. ✓ Production: Error details hidden
+5. Console: [track] error:boundary_caught logged
+```
+
+**Inline Error Boundary (Component-Level):**
+```bash
+# Future: Wrap specific components with:
+# <ErrorBoundary fallback="inline">...</ErrorBoundary>
+
+1. Component error → Inline boundary catches
+2. ✓ Card with red border (2px) renders
+3. ✓ "Component Error" message with icon
+4. ✓ "Retry" button to reset error state
+5. Other parts of page remain functional
+```
+
+**Error Boundary Reset:**
+```bash
+1. Error fallback displays
+2. Click "Try Again" button
+3. ✓ Error state clears
+4. ✓ Component re-renders
+5. Console: [track] error:boundary_reset logged
+```
+
+### Telemetry Tracking
+
+**Console Logs (Development):**
+```bash
+1. Navigate between pages:
+   # Console: [track] nav:route_change { from: "/", to: "/login" }
+
+2. Attempt login:
+   # Console: [track] auth:login_attempt { email: "user@example.com" }
+
+3. Success:
+   # Console: [track] auth:login_success { email: "user@example.com" }
+
+4. Failure:
+   # Console: [track] auth:login_failed { reason: "invalid_credentials" }
+
+5. Logout:
+   # Console: [track] auth:logout {}
+
+6. Error caught:
+   # Console: [track] error:boundary_caught { error, stack, componentStack }
+```
+
+**Telemetry Flag Control:**
+```bash
+# Disable telemetry
+localStorage.setItem('telemetry_enabled', 'false')
+# Reload page → no [track] logs
+
+# Re-enable telemetry
+localStorage.removeItem('telemetry_enabled')
+# Reload page → [track] logs appear
+```
+
+**Debug Helpers (Dev Console):**
+```bash
+# In browser DevTools console:
+
+# Get all tracked events
+getTelemetryEvents()
+# Returns: array of last 50 events
+
+# Clear event history
+clearTelemetryEvents()
+# Removes telemetry_events from localStorage
+
+# Check session ID
+sessionStorage.getItem('telemetry_session_id')
+# Returns: session_<timestamp>_<random>
+```
+
+**Event Structure:**
+```typescript
+{
+  name: "auth:login_success",
+  timestamp: "2025-10-06T20:45:30.123Z",
+  payload: { email: "user@example.com" },
+  session_id: "session_1728246330_abc123"
+}
+```
+
+### Branded UI Consistency
+
+**Login Form:**
+- ✓ Uses Card with elevation="md", padding="lg"
+- ✓ Input fields use --input-border-focus (primary blue ring)
+- ✓ Primary button uses --btn-primary-bg
+- ✓ Error Banner uses --banner-error-bg/fg
+- ✓ Typography: Poppins font, semantic text colors
+- ✓ No raw hex values in component code
+
+**Logout Confirmation:**
+- ✓ Card centered with max-w-md
+- ✓ Buttons use correct variants (primary/secondary)
+- ✓ Text colors use --text-primary, --text-secondary
+
+**Error Fallbacks:**
+- ✓ Global: Uses --surface-subtle background, Card elevation="lg"
+- ✓ Inline: Uses --colour-error for border and icon
+- ✓ Buttons inherit brand styling
+
+### Integration Tests
+
+**Full Auth Flow:**
+```bash
+1. Start at / (home page)
+2. Click "Login" → Navigate to /login
+3. Submit credentials → Success (80% chance)
+4. Redirect to /dashboard
+5. Click "Logout" → Navigate to /logout
+6. Confirm logout → Clear session → Redirect to /
+7. Try to access /dashboard → Not redirected (mock auth doesn't protect routes yet)
+```
+
+**Error Recovery:**
+```bash
+1. Trigger error → Fallback renders
+2. Click "Try Again" → Error clears
+3. Continue using app normally
+4. Check console → All errors logged
+```
+
+**Telemetry Completeness:**
+```bash
+# After full auth flow, check:
+getTelemetryEvents()
+
+# Should include:
+- auth:login_attempt
+- auth:login_success (or auth:login_failed)
+- nav:route_change (multiple)
+- auth:logout
+- All with timestamps and session_id
+```
+
+### Accessibility
+
+**Login Form:**
+- ✓ Email/password inputs have labels (for/id association)
+- ✓ Error messages have role="alert"
+- ✓ Tab order: Email → Password → Submit
+- ✓ Enter key submits form
+- ✓ Focus rings visible on all inputs
+
+**Error Boundaries:**
+- ✓ "Try Again" button keyboard accessible
+- ✓ Focus trapped in error fallback (future enhancement)
+- ✓ Error messages readable (AA contrast)
+
+### Browser Compatibility
+
+**localStorage/sessionStorage:**
+- ✓ Works in Chrome/Firefox/Safari/Edge
+- ✓ Fallback if storage unavailable (graceful degradation)
+
+**Error Boundaries:**
+- ✓ React 18+ error boundary API
+- ✓ Catches client-side errors only (not server errors)
+
+### Definition of Done Checklist
+
+- [ ] /login shows branded form with validation
+- [ ] Login success → redirects to /dashboard
+- [ ] 20% login failure shows error Banner
+- [ ] /logout clears session and redirects to /
+- [ ] Global ErrorBoundary catches and logs errors
+- [ ] Console shows [track] telemetry events
+- [ ] TELEMETRY_ENABLED=false suppresses logs
+- [ ] All UI uses NGOInfo brand tokens
+- [ ] No hardcoded hex values in auth components
+- [ ] Session persists across page reloads
+- [ ] Error fallback UI is branded and accessible
+
 

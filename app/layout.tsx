@@ -3,6 +3,7 @@ import "@/styles/tokens.css";
 import Header from "@ui/layout/Header";
 import Footer from "@ui/layout/Footer";
 import RouteChangeTelemetry from "@lib/telemetry-client";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata = {
   title: "NGOInfo",
@@ -21,12 +22,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen flex flex-col">
-        <RouteChangeTelemetry />
-        <Header />
-        <main className="flex-1 container mx-auto px-4 py-6 md:py-8">
-          {children}
-        </main>
-        <Footer />
+        <ErrorBoundary fallback="global">
+          <RouteChangeTelemetry />
+          <Header />
+          <main className="flex-1 container mx-auto px-4 py-6 md:py-8">
+            {children}
+          </main>
+          <Footer />
+        </ErrorBoundary>
       </body>
     </html>
   );

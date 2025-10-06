@@ -304,4 +304,242 @@ _* Required when auth is implemented_
 - [Railway Environment Variables](https://docs.railway.app/develop/variables)
 - [OWASP Secrets Management](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)
 
+## ADR-006: Auth UX, Error Boundaries, and Telemetry Framework
+
+**Date:** 2025-10-06  
+**Status:** Accepted  
+**Context:** Establish auth UX scaffolding, error handling, and telemetry infrastructure before backend integration.
+
+### Motivation
+We need to:
+1. Create a consistent, branded login/logout experience
+2. Handle runtime errors gracefully with user-friendly fallbacks
+3. Establish structured telemetry for monitoring UI events and errors
+4. Maintain mock-based flows until real auth integration in V11
+
+### Decisions
+
+#### 1. Mock Authentication (features/auth/)
+
+**Login Flow:**
+- Branded form using Card, Input, Button primitives from UI kit
+- Mock session stored in localStorage (`gp_session=true`)
+- 20% simulated failure rate for testing error states
+- Validation: Empty field checks with inline Banner errors
+- Success: 1-second delay → redirect to /dashboard
+
+**Logout Flow:**
+- Confirmation screen with branded Card
+- Clears localStorage session
+- Redirects to home page
+
+**Mock Session Hook (`useMockSession.ts`):**
+```typescript
+- login(email, password) → simulates API delay + random failure
+- logout() → clears session
+- session state → { isAuthenticated, email }
+```
+
+**Future Integration (V11):**
+- Replace localStorage with NextAuth/Clerk session
+- Connect to Railway backend auth endpoints
+- Add JWT token management
+- Implement refresh token flow
+
+#### 2. Error Boundaries
+
+**Global Error Boundary:**
+- Wraps entire app shell in `app/layout.tsx`
+- Full-page fallback for catastrophic errors
+- Branded UI: Card with error icon, message, "Try Again" and "Go Home" buttons
+- Development mode: Shows error details
+- Logs to telemetry with `track("error:boundary_caught")`
+
+**Inline Error Boundary:**
+- Component-level error catching
+- Renders Card with error border (2px red)
+- Shows "Component Error" message with "Retry" button
+- Used for isolated component failures
+
+**Error Tracking:**
+- All errors captured and sent to `track()` function
+- Includes error message, stack trace, component stack
+- Support ID generation for user-facing errors
+
+#### 3. Telemetry Layer (`lib/telemetry.ts`)
+
+**`track(eventName, payload)` Function:**
+- Structured event logging with category:action naming
+- Event categories: `auth:*`, `error:*`, `nav:*`, `ui:*`
+- Respects `TELEMETRY_ENABLED` flag (localStorage + env)
+- Session ID tracking via sessionStorage
+- Stores last 50 events in localStorage (dev only)
+
+**Event Examples:**
+```typescript
+track("auth:login_attempt", { email })
+track("auth:login_success", { email })
+track("auth:logout", {})
+track("error:boundary_caught", { error, stack })
+track("ui:banner_dismissed", { variant })
+```
+
+**Implementation:**
+- Console logging in development
+- Placeholder for network endpoint in production
+- Guards: Disabled if `TELEMETRY_ENABLED=false`
+- Debug helpers: `getTelemetryEvents()`, `clearTelemetryEvents()`
+
+**Future Integration:**
+- Forward events to Datadog/Sentry/internal collector
+- Add user context (when authenticated)
+- Performance metrics (Web Vitals)
+- Error correlation with backend logs
+
+### Trade-offs
+
+**Pros:**
+- Branded, consistent auth UX ready for real auth drop-in
+- Graceful error handling improves user experience
+- Structured telemetry foundation for observability
+- Mock flows allow frontend iteration without backend
+- All UI uses semantic tokens (no hardcoded values)
+
+**Cons:**
+- Mock auth doesn't reflect real security constraints
+- localStorage session not secure (will fix in V11)
+- Telemetry limited to console logs (no backend yet)
+- Error boundaries don't catch server-side errors (Next.js error.tsx needed)
+
+### Implementation Details
+
+**File Structure:**
+```
+features/auth/
+  ├── LoginForm.tsx          # Branded login UI
+  ├── Logout.tsx             # Logout confirmation
+  └── hooks/
+      └── useMockSession.ts  # Mock session management
+
+components/
+  └── ErrorBoundary.tsx      # Global + inline boundaries
+
+lib/
+  └── telemetry.ts           # Extended with track()
+
+app/
+  ├── login/page.tsx         # Login route
+  └── logout/page.tsx        # Logout route
+```
+
+**Error Boundary Integration:**
+```typescript
+// app/layout.tsx
+<ErrorBoundary fallback="global">
+  <RouteChangeTelemetry />
+  <Header />
+  <main>{children}</main>
+  <Footer />
+</ErrorBoundary>
+```
+
+**Telemetry Integration:**
+```typescript
+// LoginForm.tsx
+track("auth:login_attempt", { email });
+// ... on success
+track("auth:login_success", { email });
+
+// ErrorBoundary.tsx
+track("error:boundary_caught", {
+  error: error.message,
+  stack: error.stack,
+  componentStack: errorInfo.componentStack
+});
+```
+
+### Testing Approach
+
+**Login Flow:**
+1. Navigate to /login → see branded form
+2. Submit empty fields → inline Banner error
+3. Submit valid credentials → 80% success → redirect to /dashboard
+4. 20% failure → Banner error displayed
+5. Check console for telemetry logs
+
+**Logout Flow:**
+1. Navigate to /logout → see confirmation
+2. Click "Sign Out" → session cleared → redirect to /
+3. Check localStorage (gp_session removed)
+
+**Error Boundaries:**
+1. Throw error in component → Global boundary catches → fallback renders
+2. Inline boundary (future) → component error → card fallback
+3. Console shows `track("error:boundary_caught")` log
+
+**Telemetry:**
+1. Check console for `[track]` logs
+2. localStorage: `telemetry_enabled=false` → no logs
+3. Dev tools: `getTelemetryEvents()` → array of events
+4. Session ID persists across page loads (sessionStorage)
+
+### Alternatives Considered
+
+**Option A: Real Auth from Start**
+- Rejected: Backend not ready; would block frontend progress
+- Mock flows allow parallel development
+
+**Option B: No Error Boundaries**
+- Rejected: Poor UX when errors occur
+- Error boundaries provide graceful degradation
+
+**Option C: Third-party Telemetry (Analytics.js, Segment)**
+- Deferred: Adds external dependency and cost
+- Custom implementation gives full control; integrate later
+
+**Option D: Zustand/Redux for Session**
+- Rejected: Overkill for simple mock session
+- Hook-based approach sufficient; real auth will use provider
+
+### Migration Path
+
+**Phase 1 (Current - V3):**
+- ✅ Mock auth with localStorage
+- ✅ Error boundaries with telemetry
+- ✅ Structured event tracking (console)
+
+**Phase 2 (V11 - Real Auth):**
+- Replace `useMockSession` with NextAuth provider
+- Add protected route middleware (check real session)
+- JWT token storage (httpOnly cookies)
+- Backend auth endpoint integration
+
+**Phase 3 (Future - Observability):**
+- Forward telemetry to monitoring service
+- Error correlation with backend logs
+- Performance monitoring (Web Vitals)
+- User session replay (optional)
+
+### Security Considerations
+
+**Current (Mock):**
+- ⚠️ localStorage session is NOT secure
+- ⚠️ No actual authentication/authorization
+- ⚠️ Anyone can set `gp_session=true`
+- ✅ No sensitive data stored
+- ✅ UI-only validation
+
+**Future (Real Auth):**
+- ✅ HttpOnly, Secure cookies
+- ✅ CSRF protection
+- ✅ Session expiry and refresh
+- ✅ Backend token validation
+- ✅ Rate limiting on auth endpoints
+
+### References
+- [React Error Boundaries](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)
+- [Next.js Error Handling](https://nextjs.org/docs/app/building-your-application/routing/error-handling)
+- [Web Analytics Best Practices](https://web.dev/vitals/)
+- [NextAuth.js](https://next-auth.js.org/) (for future integration)
+
 

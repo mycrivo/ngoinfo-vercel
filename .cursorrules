@@ -1,0 +1,28 @@
+# Scope & safety
+- Never place secrets or tokens in code. Do not create or modify files named ".env", ".env.local", etc.
+- Do not add NEXT_PUBLIC_* vars for anything sensitive.
+- All API calls must use services/* clients and validate I/O with zod schemas in features/*/schemas.
+
+# Architecture & performance
+- Prefer Server Components. Only create Client Components when strictly required (stateful UI, effects, listeners).
+- Use dynamic imports for heavy client-only deps.
+- Avoid adding new top-level deps unless necessary; justify changes in PR description.
+
+# Testing & types
+- All new services must include a minimal test in __tests__/ validating success + failure paths.
+- Strict TypeScript only: no "any". If unavoidable, narrow with unknown → zod parse.
+- If a schema changes, update the zod schema first; fix compile errors next.
+
+# Editing etiquette
+- Do not rewrite entire files when small diffs suffice; prefer targeted patches.
+- Do not change public function signatures without updating usage sites and tests.
+- Maintain accessibility (labels, roles, keyboard nav) for any form or interactive UI.
+
+# Logging & errors
+- Never log PII. Use lib/telemetry wrapper.
+- User-facing errors must be friendly; include an internal Support ID.
+
+# Prompt hygiene
+- When asked to implement a feature, first list acceptance criteria and affected files, then implement.
+
+

@@ -1,0 +1,89 @@
+/**
+ * Banner Component Styles - NGOInfo Branding
+ * Consumes semantic tokens only - no hardcoded hex values
+ */
+
+.ngo-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid;
+}
+
+/* Icon */
+.ngo-banner__icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Content */
+.ngo-banner__content {
+  flex: 1;
+  font-size: var(--text-small);
+  line-height: var(--leading-normal);
+}
+
+/* Dismiss button */
+.ngo-banner__dismiss {
+  flex-shrink: 0;
+  padding: var(--space-1);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: currentColor;
+  transition: opacity var(--motion-fast) var(--motion-ease);
+}
+
+.ngo-banner__dismiss:hover {
+  opacity: 0.7;
+}
+
+.ngo-banner__dismiss:focus-visible {
+  outline: var(--focus-ring-width) solid currentColor;
+  outline-offset: var(--focus-ring-offset);
+}
+
+.ngo-banner__dismiss-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Variant: Info */
+.ngo-banner--info {
+  background-color: var(--banner-info-bg);
+  color: var(--banner-info-fg);
+  border-color: var(--banner-info-border);
+}
+
+/* Variant: Success */
+.ngo-banner--success {
+  background-color: var(--banner-success-bg);
+  color: var(--banner-success-fg);
+  border-color: var(--banner-success-border);
+}
+
+/* Variant: Warning */
+.ngo-banner--warning {
+  background-color: var(--banner-warning-bg);
+  color: var(--banner-warning-fg);
+  border-color: var(--banner-warning-border);
+}
+
+/* Variant: Error */
+.ngo-banner--error {
+  background-color: var(--banner-error-bg);
+  color: var(--banner-error-fg);
+  border-color: var(--banner-error-border);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .ngo-banner__dismiss {
+    transition-duration: 0.01ms;
+  }
+}
+

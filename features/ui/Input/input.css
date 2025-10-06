@@ -1,0 +1,145 @@
+/**
+ * Input Component Styles - NGOInfo Branding
+ * Consumes semantic tokens only - no hardcoded hex values
+ */
+
+.ngo-input-wrapper {
+  display: block;
+}
+
+.ngo-input-wrapper--full-width {
+  width: 100%;
+}
+
+/* ========================================
+ * Label
+ * ======================================== */
+
+.ngo-input__label {
+  display: block;
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+/* ========================================
+ * Input Base
+ * ======================================== */
+
+.ngo-input {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading-normal);
+  color: var(--input-fg);
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
+  
+  /* Transitions */
+  transition-property: border-color, box-shadow;
+  transition-duration: var(--motion-fast);
+  transition-timing-function: var(--motion-ease);
+  
+  /* Remove default outline */
+  outline: none;
+}
+
+.ngo-input::placeholder {
+  color: var(--input-placeholder);
+}
+
+/* Focus state */
+.ngo-input:focus {
+  border-color: var(--input-border-focus);
+  box-shadow: 0 0 0 var(--focus-ring-width) rgba(35, 56, 246, var(--focus-ring-opacity));
+}
+
+/* Error state */
+.ngo-input--error {
+  border-color: var(--input-border-error);
+}
+
+.ngo-input--error:focus {
+  border-color: var(--input-border-error);
+  box-shadow: 0 0 0 var(--focus-ring-width) rgba(211, 47, 47, 0.2);
+}
+
+/* Success state (optional) */
+.ngo-input--success {
+  border-color: var(--input-border-success);
+}
+
+.ngo-input--success:focus {
+  border-color: var(--input-border-success);
+  box-shadow: 0 0 0 var(--focus-ring-width) rgba(46, 125, 50, 0.2);
+}
+
+/* Disabled state */
+.ngo-input:disabled {
+  background-color: var(--input-disabled-bg);
+  color: var(--input-disabled-fg);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Full width */
+.ngo-input--full-width {
+  width: 100%;
+}
+
+/* ========================================
+ * Textarea Specific
+ * ======================================== */
+
+textarea.ngo-input {
+  resize: vertical;
+  min-height: 96px; /* ~4 rows */
+}
+
+/* ========================================
+ * Select Specific
+ * ======================================== */
+
+select.ngo-input {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%235B5F82' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right var(--space-2) center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: var(--space-8);
+  appearance: none;
+}
+
+/* ========================================
+ * Helper Text
+ * ======================================== */
+
+.ngo-input__helper {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+}
+
+.ngo-input__helper--error {
+  color: var(--colour-error);
+}
+
+.ngo-input__helper--success {
+  color: var(--colour-success);
+}
+
+/* ========================================
+ * Reduced Motion
+ * ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .ngo-input {
+    transition-duration: 0.01ms;
+  }
+}
+

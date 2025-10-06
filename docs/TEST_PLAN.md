@@ -223,4 +223,185 @@
 - [ ] Linter passes (no warnings)
 - [ ] No runtime errors in console
 
+## 2A - Branding System QA
+
+### Visual QA - /sandbox/branding
+
+**Access Sandbox:**
+```bash
+http://localhost:3000/sandbox/branding
+```
+
+**Color Tokens:**
+1. ✓ Core palette displays correctly (Primary #2338F6, Secondary #795CFB, Accent #FFC857, Dark #180466)
+2. ✓ Functional colors visible (Success, Warning, Error)
+3. ✓ No hardcoded hex values in component code (all use CSS variables)
+
+**Typography (Poppins):**
+1. ✓ H1-H3 headings render with correct sizes and weights
+2. ✓ Body text legible at all viewport sizes (14px→16px→18px)
+3. ✓ Text on both default and subtle surfaces maintains AA contrast
+4. ✓ Tabular numerals and ligatures enabled
+
+**Buttons:**
+1. ✓ Primary variant: correct colors, hover darkens ~10%, active scales to 0.98
+2. ✓ Secondary variant: outline→fill on hover, correct transition
+3. ✓ Link variant: underline on hover only, correct color
+4. ✓ Disabled states: 60% opacity, not-allowed cursor
+5. ✓ Focus rings: 2px width, offset visible on Tab navigation
+6. ✓ Min tap target: 44px height on md size (WCAG 2.5.5)
+
+**Inputs:**
+1. ✓ Border color changes on focus (primary blue ring)
+2. ✓ Error state: red border + error message in red
+3. ✓ Placeholder text readable (neutral-300 color)
+4. ✓ Select dropdown: custom arrow, correct padding
+5. ✓ Textarea: minimum 4 rows, vertical resize
+6. ✓ Disabled state: grayed out, 60% opacity
+
+**Cards:**
+1. ✓ Elevation variants: none/sm/md/lg shadows increase correctly
+2. ✓ Header/footer borders match card border color
+3. ✓ Padding variants (sm/md/lg) space content correctly
+4. ✓ Background uses --card-bg token
+
+**Banners:**
+1. ✓ Info: light blue background, primary blue text
+2. ✓ Success: light green background, success green text
+3. ✓ Warning: light yellow background, warning brown text
+4. ✓ Error: light red background, error red text
+5. ✓ Icons display correctly for each variant
+6. ✓ Dismissible: × button removes banner smoothly
+7. ✓ Role="alert" for error/warning (check DevTools)
+
+### Accessibility Checks
+
+**Contrast (WCAG AA):**
+```bash
+# Use DevTools > Lighthouse > Accessibility
+# Or browser extension: axe DevTools
+
+✓ Primary button text on primary bg: ≥4.5:1
+✓ Secondary button text: ≥4.5:1
+✓ Body text on default surface: ≥4.5:1
+✓ Body text on subtle surface: ≥4.5:1
+✓ Banner text on all variant backgrounds: ≥4.5:1
+✓ Error/helper text: ≥4.5:1
+```
+
+**Focus Visible:**
+1. Tab through buttons → 2px blue outline visible
+2. Tab through inputs → blue ring appears
+3. Tab to banner dismiss button → outline visible
+4. Never suppressed (outline: none only with :focus-visible)
+
+**Reduced Motion:**
+```bash
+# DevTools > Rendering > Emulate CSS prefers-reduced-motion: reduce
+# Or OS setting: Settings > Accessibility > Reduce motion
+
+✓ Button active scale disabled (transform: none)
+✓ All transitions set to 0.01ms
+✓ No jarring animations
+```
+
+### Responsive Behavior
+
+**Mobile (375px):**
+```bash
+# DevTools > iPhone SE
+
+✓ Typography scales down to 14px floor
+✓ Color palette grid stacks to 2 columns
+✓ Buttons maintain 44px tap target
+✓ Cards stack in single column
+```
+
+**Tablet (768px):**
+```bash
+# DevTools > iPad
+
+✓ 2-column grids for inputs and cards
+✓ Typography at 16px base
+```
+
+**Desktop (≥1200px):**
+```bash
+✓ Typography scales to 18px base
+✓ H1 increases to 56px
+✓ Container max-width 1280px
+✓ 24px gutters
+```
+
+### Token Validation
+
+**No Hardcoded Hex in Components:**
+```bash
+# Search codebase for # followed by 6 hex digits in component files
+grep -r "#[0-9a-fA-F]{6}" features/ui/
+
+# Expected: No matches in .tsx files (only in CSS variables)
+```
+
+**Semantic Token Usage:**
+- ✓ Buttons use --btn-* tokens
+- ✓ Inputs use --input-* tokens
+- ✓ Banners use --banner-* tokens
+- ✓ Cards use --card-* tokens
+- ✓ All components reference tokens, not core palette
+
+### Dark Mode Seam (Prepared, No Visual Change)
+
+```bash
+# Manually in browser DevTools console:
+document.documentElement.setAttribute('data-theme', 'dark')
+
+# Expected: No visual change (dark tokens not defined yet)
+# Verify: data-theme attribute applied successfully
+```
+
+### Performance
+
+**Bundle Size:**
+```bash
+npm run build
+
+# Check output for styles/tokens.css
+# Expected: < 10KB for all token definitions
+```
+
+**Lighthouse:**
+```bash
+# DevTools > Lighthouse > Performance + Accessibility
+
+✓ Accessibility score: ≥95
+✓ No layout shifts (CLS = 0)
+✓ Font loading: Poppins preconnect + display=swap
+```
+
+### Browser Compatibility
+
+Test in:
+- ✓ Chrome/Edge (Chromium)
+- ✓ Firefox
+- ✓ Safari (if available)
+
+Check:
+- CSS variables supported
+- color-mix() function (fallback in older browsers)
+- Focus-visible pseudo-class
+
+### Definition of Done Checklist
+
+- [ ] All components use semantic tokens (no hardcoded hex)
+- [ ] /sandbox/branding renders without errors
+- [ ] WCAG AA contrast verified for all text/bg combinations
+- [ ] Focus rings visible (2px, offset) on all interactive elements
+- [ ] Buttons meet 44px tap target minimum
+- [ ] Typography scales responsively (14→16→18px)
+- [ ] Hover/active states work correctly
+- [ ] Reduced motion respected
+- [ ] Dark mode seam prepared (data-theme attribute)
+- [ ] No linter errors
+
 

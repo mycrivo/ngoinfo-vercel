@@ -1,19 +1,20 @@
 "use client";
 
 import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes } from "react";
+import "./input.css";
 
 /**
- * Input Component - Minimal UI Kit (V2)
+ * Input Component - NGOInfo Branding (2A)
  * 
- * Supports text, select, and textarea variants.
- * Includes focus ring, error states, and helper text.
- * Neutral styling with placeholder CSS variables.
+ * Consumes semantic design tokens from global theme.
+ * No hardcoded hex values - all colors from CSS variables.
  * 
  * Accessibility:
- * - Labels properly associated
- * - Error messages announced
- * - Focus indicators
+ * - Labels properly associated (for/id)
+ * - Error messages announced (aria-invalid, role="alert")
+ * - 2px focus ring with offset
  * - Keyboard navigation
+ * - Respects prefers-reduced-motion
  */
 
 interface BaseInputProps {
@@ -52,46 +53,19 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
       ...restProps
     } = props;
 
-    const baseInputStyles = [
-      "px-3 py-2",
-      "border rounded-md",
-      "text-[var(--placeholder-fg,#1f2937)]",
-      "bg-[var(--placeholder-input-bg,white)]",
-      "transition-colors duration-200",
-      "focus:outline-none focus:ring-2 focus:ring-offset-0",
-      "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-[var(--placeholder-disabled-bg,#f3f4f6)]",
-    ].join(" ");
-
-    const normalBorderStyles = [
-      "border-[var(--placeholder-border,#d1d5db)]",
-      "focus:border-[var(--placeholder-primary-bg,#3b82f6)]",
-      "focus:ring-[var(--placeholder-primary-bg,#3b82f6)]",
-    ].join(" ");
-
-    const errorBorderStyles = [
-      "border-[var(--placeholder-error,#ef4444)]",
-      "focus:border-[var(--placeholder-error,#ef4444)]",
-      "focus:ring-[var(--placeholder-error,#ef4444)]",
-    ].join(" ");
-
-    const widthStyles = fullWidth ? "w-full" : "";
-
     const inputClassName = [
-      baseInputStyles,
-      error ? errorBorderStyles : normalBorderStyles,
-      widthStyles,
+      "ngo-input",
+      error && "ngo-input--error",
+      fullWidth && "ngo-input--full-width",
       className,
-    ].join(" ");
+    ].filter(Boolean).join(" ");
 
-    const labelClassName = [
-      "block text-sm font-medium mb-1",
-      "text-[var(--placeholder-label-fg,#374151)]",
-    ].join(" ");
+    const labelClassName = "ngo-input__label";
 
     const helperClassName = [
-      "mt-1 text-sm",
-      error ? "text-[var(--placeholder-error,#ef4444)]" : "text-[var(--placeholder-helper-fg,#6b7280)]",
-    ].join(" ");
+      "ngo-input__helper",
+      error && "ngo-input__helper--error",
+    ].filter(Boolean).join(" ");
 
     const renderInput = () => {
       if ("variant" in props && props.variant === "textarea") {
@@ -141,7 +115,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
     };
 
     return (
-      <div className={fullWidth ? "w-full" : ""}>
+      <div className={fullWidth ? "ngo-input-wrapper ngo-input-wrapper--full-width" : "ngo-input-wrapper"}>
         {label && (
           <label htmlFor={props.id} className={labelClassName}>
             {label}

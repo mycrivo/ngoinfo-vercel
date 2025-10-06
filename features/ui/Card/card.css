@@ -1,0 +1,101 @@
+/**
+ * Card Component Styles - NGOInfo Branding
+ * Consumes semantic tokens only - no hardcoded hex values
+ */
+
+.ngo-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* Elevation variants */
+.ngo-card--elevation-none {
+  box-shadow: var(--shadow-none);
+}
+
+.ngo-card--elevation-sm {
+  box-shadow: var(--shadow-sm);
+}
+
+.ngo-card--elevation-md {
+  box-shadow: var(--shadow-md);
+}
+
+.ngo-card--elevation-lg {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Padding variants */
+.ngo-card--padding-none {
+  padding: 0;
+}
+
+.ngo-card--padding-sm {
+  padding: var(--space-3);
+}
+
+.ngo-card--padding-md {
+  padding: var(--space-4);
+}
+
+.ngo-card--padding-lg {
+  padding: var(--space-6);
+}
+
+/* Header */
+.ngo-card__header {
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.ngo-card--padding-sm .ngo-card__header {
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.ngo-card--padding-lg .ngo-card__header {
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.ngo-card--padding-none .ngo-card__header {
+  padding: var(--space-4);
+  padding-bottom: var(--space-3);
+  margin-bottom: 0;
+}
+
+/* Content */
+.ngo-card__content {
+  /* Content inherits padding from parent */
+}
+
+.ngo-card--padding-none .ngo-card__content {
+  padding: var(--space-4);
+}
+
+/* Footer */
+.ngo-card__footer {
+  border-top: 1px solid var(--card-border);
+  padding-top: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.ngo-card--padding-sm .ngo-card__footer {
+  padding-top: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.ngo-card--padding-lg .ngo-card__footer {
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.ngo-card--padding-none .ngo-card__footer {
+  padding: var(--space-4);
+  padding-top: var(--space-3);
+  margin-top: 0;
+}
+

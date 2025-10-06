@@ -1,0 +1,166 @@
+/**
+ * Button Component Styles - NGOInfo Branding
+ * Consumes semantic tokens only - no hardcoded hex values
+ */
+
+.ngo-button {
+  /* Base styles */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  
+  /* Transitions */
+  transition-property: background-color, color, border-color, transform;
+  transition-duration: var(--motion-fast);
+  transition-timing-function: var(--motion-ease);
+  
+  /* Focus visible */
+  outline: none;
+}
+
+.ngo-button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Active state - subtle scale */
+.ngo-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Disabled state */
+.ngo-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ========================================
+ * VARIANT: Primary
+ * ======================================== */
+
+.ngo-button--primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border: 1px solid var(--btn-primary-border);
+}
+
+.ngo-button--primary:hover:not(:disabled) {
+  background-color: var(--btn-primary-bg-hover);
+}
+
+.ngo-button--primary:active:not(:disabled) {
+  background-color: var(--btn-primary-bg-active);
+}
+
+.ngo-button--primary:disabled {
+  background-color: var(--btn-primary-bg-disabled);
+  color: var(--btn-primary-fg-disabled);
+}
+
+/* ========================================
+ * VARIANT: Secondary (Outline)
+ * ======================================== */
+
+.ngo-button--secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-fg);
+  border: 1px solid var(--btn-secondary-border);
+}
+
+.ngo-button--secondary:hover:not(:disabled) {
+  background-color: var(--btn-secondary-bg-hover);
+  color: var(--btn-secondary-fg-hover);
+}
+
+.ngo-button--secondary:active:not(:disabled) {
+  background-color: var(--btn-secondary-bg-active);
+  color: var(--btn-secondary-fg-hover);
+}
+
+.ngo-button--secondary:disabled {
+  background-color: var(--btn-secondary-bg-disabled);
+  color: var(--btn-secondary-fg-disabled);
+  border-color: var(--btn-secondary-border-disabled);
+}
+
+/* ========================================
+ * VARIANT: Link
+ * ======================================== */
+
+.ngo-button--link {
+  background-color: transparent;
+  color: var(--btn-link-fg);
+  border: none;
+  text-decoration: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.ngo-button--link:hover:not(:disabled) {
+  color: var(--btn-link-fg-hover);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.ngo-button--link:disabled {
+  color: var(--btn-link-fg-disabled);
+}
+
+/* ========================================
+ * SIZES
+ * ======================================== */
+
+.ngo-button--sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-small);
+  min-height: 36px;
+}
+
+.ngo-button--md {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-body);
+  min-height: 44px; /* WCAG 2.5.5 min tap target */
+}
+
+.ngo-button--lg {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-body-l);
+  min-height: 48px;
+}
+
+/* Link variant override padding */
+.ngo-button--link.ngo-button--sm,
+.ngo-button--link.ngo-button--md,
+.ngo-button--link.ngo-button--lg {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+/* ========================================
+ * FULL WIDTH
+ * ======================================== */
+
+.ngo-button--full-width {
+  width: 100%;
+}
+
+/* ========================================
+ * REDUCED MOTION
+ * ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .ngo-button {
+    transition-duration: 0.01ms;
+  }
+  
+  .ngo-button:active:not(:disabled) {
+    transform: none;
+  }
+}
+

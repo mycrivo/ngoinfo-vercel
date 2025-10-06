@@ -1,13 +1,13 @@
 "use client";
 
 import { HTMLAttributes, ReactNode } from "react";
+import "./card.css";
 
 /**
- * Card Component - Minimal UI Kit (V2)
+ * Card Component - NGOInfo Branding (2A)
  * 
- * Surface container with border and elevation.
- * Supports header, content, and footer slots.
- * Neutral styling with placeholder CSS variables.
+ * Consumes semantic design tokens from global theme.
+ * No hardcoded hex values - all colors from CSS variables.
  * 
  * Accessibility:
  * - Semantic HTML structure
@@ -31,55 +31,25 @@ export default function Card({
   className = "",
   ...props
 }: CardProps) {
-  const baseStyles = [
-    "rounded-lg",
-    "border border-[var(--placeholder-border,#e5e7eb)]",
-    "bg-[var(--placeholder-card-bg,white)]",
-  ].join(" ");
-
-  const elevationStyles = {
-    none: "",
-    sm: "shadow-sm",
-    md: "shadow-md",
-    lg: "shadow-lg",
-  };
-
-  const paddingStyles = {
-    none: "",
-    sm: "p-3",
-    md: "p-4",
-    lg: "p-6",
-  };
-
   const cardClassName = [
-    baseStyles,
-    elevationStyles[elevation],
-    paddingStyles[padding],
+    "ngo-card",
+    `ngo-card--elevation-${elevation}`,
+    `ngo-card--padding-${padding}`,
     className,
-  ].join(" ");
-
-  const headerClassName = [
-    "border-b border-[var(--placeholder-border,#e5e7eb)]",
-    padding === "none" ? "p-4 pb-3" : padding === "sm" ? "pb-2 mb-2" : padding === "md" ? "pb-3 mb-3" : "pb-4 mb-4",
-  ].join(" ");
-
-  const footerClassName = [
-    "border-t border-[var(--placeholder-border,#e5e7eb)]",
-    padding === "none" ? "p-4 pt-3" : padding === "sm" ? "pt-2 mt-2" : padding === "md" ? "pt-3 mt-3" : "pt-4 mt-4",
-  ].join(" ");
+  ].filter(Boolean).join(" ");
 
   return (
     <div className={cardClassName} {...props}>
       {header && (
-        <div className={headerClassName}>
+        <div className="ngo-card__header">
           {header}
         </div>
       )}
-      <div className={padding === "none" && (header || footer) ? "p-4" : ""}>
+      <div className="ngo-card__content">
         {children}
       </div>
       {footer && (
-        <div className={footerClassName}>
+        <div className="ngo-card__footer">
           {footer}
         </div>
       )}

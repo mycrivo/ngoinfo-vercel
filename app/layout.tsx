@@ -1,8 +1,8 @@
 import "./globals.css";
 import "@/styles/tokens.css";
-import Header from "@ui/layout/Header";
-import Footer from "@ui/layout/Footer";
-import RouteChangeTelemetry from "@lib/telemetry-client";
+import Header from "@/ui/layout/Header";
+import Footer from "@/ui/layout/Footer";
+import RouteChangeTelemetry from "@/lib/telemetry-client";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata = {

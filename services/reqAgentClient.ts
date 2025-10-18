@@ -1,4 +1,4 @@
-import { http } from "@lib/http";
+import { http } from "@/lib/http";
 
 export type FundingOpportunity = {
   id: string;
@@ -15,5 +15,10 @@ export async function getFundingOpportunity(id: string, opts?: { timeoutMs?: num
     timeoutMs: opts?.timeoutMs
   });
 }
+
+
+
+
+
 
 

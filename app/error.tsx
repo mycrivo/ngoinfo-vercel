@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { supportId } from "@lib/telemetry";
+import { supportId } from "@/lib/telemetry";
 
 export default function Error({
   error,

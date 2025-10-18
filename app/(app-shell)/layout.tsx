@@ -1,5 +1,5 @@
 import "../globals.css";
-import Banner from "@ui/feedback/Banner";
+import { Banner } from "@/features/ui/Banner";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   // Example of a global, server-first layout
@@ -17,5 +17,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </html>
   );
 }
+
+
+
+
+
 
 

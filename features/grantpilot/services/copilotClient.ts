@@ -1,4 +1,4 @@
-import { http } from "@lib/http";
+import { http } from "@/lib/http";
 import { GenerateRequest, type TGenerateRequest, type TGenerateResponse } from "../schemas/grantpilot";
 
 export async function generateProposal(req: TGenerateRequest, opts?: { timeoutMs?: number }) {
@@ -11,5 +11,10 @@ export async function generateProposal(req: TGenerateRequest, opts?: { timeoutMs
     timeoutMs: opts?.timeoutMs
   });
 }
+
+
+
+
+
 
 

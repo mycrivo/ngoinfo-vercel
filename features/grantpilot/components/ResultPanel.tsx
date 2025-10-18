@@ -1,6 +1,6 @@
 "use client";
 import { type TGenerateResponse } from "../schemas/grantpilot";
-import Banner from "@ui/feedback/Banner";
+import { Banner } from "@/features/ui/Banner";
 
 export default function ResultPanel({ data }: { data: TGenerateResponse }) {
   if (data.type === "success") {
@@ -25,5 +25,10 @@ export default function ResultPanel({ data }: { data: TGenerateResponse }) {
   }
   return <Banner>Error: {data.message}</Banner>;
 }
+
+
+
+
+
 
 

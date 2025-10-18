@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const securityHeaders = [
   {
@@ -45,7 +46,20 @@ const nextConfig: NextConfig = {
       headers: securityHeaders
     }
   ],
-  experimental: { typedRoutes: true }
+  experimental: { typedRoutes: true },
+  webpack: (config) => {
+    // Ensure webpack resolves the path aliases
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@": path.resolve(__dirname, "."),
+      "@features": path.resolve(__dirname, "features"),
+      "@ui": path.resolve(__dirname, "ui"),
+      "@lib": path.resolve(__dirname, "lib"),
+      "@services": path.resolve(__dirname, "services"),
+      "@types": path.resolve(__dirname, "types"),
+    };
+    return config;
+  },
 };
 
 export default nextConfig;

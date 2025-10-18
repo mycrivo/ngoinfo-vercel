@@ -10,6 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./*"],
       "@features/*": ["features/*"],
       "@ui/*": ["ui/*"],
       "@lib/*": ["lib/*"],

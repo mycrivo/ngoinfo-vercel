@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useRouter } from "next/navigation";
 import { Card } from "@/features/ui/Card";
 import { Button } from "@/features/ui/Button";
@@ -12,6 +14,11 @@ import { startTrial } from "@/lib/quota";
  * Displays branded plan tiers with 2-day free trial CTA.
  * No credit card required for trial.
  */
+
+export const metadata = {
+  title: "Pricing - NGOInfo",
+  description: "Choose your plan and start your free trial",
+};
 
 export default function PricingPage() {
   const router = useRouter();

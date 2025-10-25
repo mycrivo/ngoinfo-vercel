@@ -69,7 +69,12 @@ function validateEnv() {
     if (!clientResult.success) {
       const errors = clientResult.error.format();
       const message = `[env] Invalid client environment variables: ${JSON.stringify(errors, null, 2)}`;
-      console.warn(message);
+      
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(message);
+      } else {
+        console.warn(message);
+      }
     }
 
     // Server-side validation (only on server)
@@ -96,7 +101,12 @@ function validateEnv() {
       if (!serverResult.success) {
         const errors = serverResult.error.format();
         const message = `[env] Invalid server environment variables: ${JSON.stringify(errors, null, 2)}`;
-        console.warn(message);
+        
+        if (process.env.NODE_ENV === "production") {
+          throw new Error(message);
+        } else {
+          console.warn(message);
+        }
       }
 
       return {
@@ -107,9 +117,12 @@ function validateEnv() {
 
     return {
       client: clientResult.success ? clientResult.data : clientSchema.parse({}),
-      server: null, // Not available on client
+      server: null,
     };
   } catch (error) {
+    if (process.env.NODE_ENV === "production") {
+      throw error;
+    }
     console.warn('[env] Environment validation failed, using defaults:', error);
     return {
       client: clientSchema.parse({}),

@@ -10,6 +10,11 @@ import { Banner } from "@/features/ui/Banner";
  * Used for manual testing and accessibility verification.
  */
 
+export const metadata = {
+  title: "Branding System - NGOInfo",
+  description: "Design system tokens and components",
+};
+
 export default function BrandingSandboxPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-16 py-8">

@@ -13,6 +13,11 @@ import { Banner } from "@/features/ui/Banner";
  * Current styling uses placeholder CSS variables.
  */
 
+export const metadata = {
+  title: "UI Sandbox - NGOInfo",
+  description: "Component showcase and testing",
+};
+
 export default function UISandboxPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-12 py-8">

@@ -5,6 +5,9 @@ export default [
   js.configs.recommended,
   ...ts.configs.recommended,
   {
+    ignores: ["node_modules", ".next", "dist", "out"],
+  },
+  {
     rules: {
       "no-console": ["warn", { allow: ["error"] }],
       "@typescript-eslint/no-unused-vars": [
@@ -19,8 +22,7 @@ export default [
           message: "Use lib/http.ts wrapper for fetch."
         }
       ]
-    },
-    ignores: ["node_modules", ".next", "dist"]
+    }
   }
 ];
 

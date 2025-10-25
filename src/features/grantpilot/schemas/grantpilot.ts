@@ -24,7 +24,7 @@ export const ProposalDoc = z.object({
 
 export const GenerateResponse = z.discriminatedUnion("type", [
   z.object({ type: z.literal("success"), proposal: ProposalDoc, sources: z.array(Source), promptVersion: z.string() }),
-  z.object({ type: z.literal("needs_review"), issues: z.array(z.string()), draft: z.any() }),
+  z.object({ type: z.literal("needs_review"), issues: z.array(z.string()), draft: z.record(z.unknown()) }),
   z.object({ type: z.literal("error"), code: z.string(), message: z.string() })
 ]);
 

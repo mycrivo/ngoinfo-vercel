@@ -1,5 +1,8 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card } from '@/features/ui/Card';
 import { Banner } from '@/features/ui/Banner';
@@ -12,7 +15,12 @@ import { getOpportunityById } from '@/mocks/data/opportunities';
  * Full implementation in V6.
  */
 
-export default function GrantPilotPage() {
+export const metadata = {
+  title: "GrantPilot - NGOInfo",
+  description: "AI-powered grant proposal generation",
+};
+
+function GrantPilotContent() {
   const searchParams = useSearchParams();
   const oppId = searchParams.get('oppId');
   const opportunity = oppId ? getOpportunityById(oppId) : null;
@@ -48,6 +56,14 @@ export default function GrantPilotPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function GrantPilotPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GrantPilotContent />
+    </Suspense>
   );
 }
 

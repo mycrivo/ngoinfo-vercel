@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+export const dynamic = 'force-dynamic';
+
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card } from '@/features/ui/Card';
 import { Input } from '@/features/ui/Input';
@@ -15,10 +17,15 @@ import type { Opportunity } from '@/mocks/data/opportunities';
  * Searchable, filterable list with URL-synced state.
  */
 
+export const metadata = {
+  title: "Funding Opportunities - NGOInfo",
+  description: "Discover grant opportunities for your NGO",
+};
+
 const REGIONS = ['all', 'East Africa', 'West Africa', 'Southern Africa', 'Sub-Saharan Africa', 'Global'];
 const SECTORS = ['all', 'Health', 'Education', 'Agriculture', 'Environment', 'Water', 'Gender Equality'];
 
-export default function OpportunitiesPage() {
+function OpportunitiesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -150,6 +157,14 @@ export default function OpportunitiesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OpportunitiesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OpportunitiesContent />
+    </Suspense>
   );
 }
 

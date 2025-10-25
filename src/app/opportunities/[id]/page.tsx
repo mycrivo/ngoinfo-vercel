@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/features/ui/Card';
@@ -15,6 +17,11 @@ import { getQuotaStatus, getTrialStatus } from '@/lib/quota';
  * Full details of a funding opportunity with "Write with GrantPilot" CTA.
  * CTA is gated by quota and trial status.
  */
+
+export const metadata = {
+  title: "Opportunity Details - NGOInfo",
+  description: "View funding opportunity details",
+};
 
 export default function OpportunityDetailPage() {
   const params = useParams();
@@ -207,5 +214,10 @@ export default function OpportunityDetailPage() {
       </div>
     </>
   );
+}
+
+export async function generateStaticParams() {
+  // Return empty array for fully dynamic route
+  return [];
 }
 

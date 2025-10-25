@@ -7,6 +7,10 @@ export default [
   {
     rules: {
       "no-console": ["warn", { allow: ["error"] }],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+      ],
       "@typescript-eslint/no-explicit-any": "error",
       "no-restricted-syntax": [
         "error",

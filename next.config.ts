@@ -45,7 +45,7 @@ const nextConfig: NextConfig = {
       headers: securityHeaders
     }
   ],
-  experimental: { typedRoutes: true },
+  experimental: { typedRoutes: false },
 };
 
 export default nextConfig;

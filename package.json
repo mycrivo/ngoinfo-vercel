@@ -1,6 +1,7 @@
 {
   "name": "ngoinfo-frontend",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -27,6 +28,9 @@
     "jest": "29.7.0",
     "typescript": "5.6.3",
     "typescript-eslint": "8.8.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
 

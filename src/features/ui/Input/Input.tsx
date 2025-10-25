@@ -69,7 +69,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
     const renderInput = () => {
       if ("variant" in props && props.variant === "textarea") {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { variant: _variant, options: _options, ...textareaProps } = props as TextareaProps;
+        const { variant: _variant, ...textareaProps } = props as TextareaProps;
         return (
           <textarea
             ref={ref as React.Ref<HTMLTextAreaElement>}
@@ -102,8 +102,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
         );
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { variant = "text", options: _options, ...inputProps } = props as TextInputProps;
+      const { variant = "text", ...inputProps } = props as TextInputProps;
       return (
         <input
           ref={ref as React.Ref<HTMLInputElement>}

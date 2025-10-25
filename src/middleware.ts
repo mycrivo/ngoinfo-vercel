@@ -74,7 +74,7 @@ function checkRateLimit(req: NextRequest): {
   shouldThrottle: boolean;
   remaining: number;
 } {
-  const ip = req.ip ?? req.headers.get("x-forwarded-for") ?? "unknown";
+  const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "unknown";
   const now = Date.now();
   
   let entry = rateLimitHits.get(ip);

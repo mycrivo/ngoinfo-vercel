@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/features/ui/Card";
@@ -16,11 +14,6 @@ import { getPlanById } from "@/lib/plans";
  * Shows plan status, quota progress, and upgrade CTAs.
  * Displays trial countdown when active.
  */
-
-export const metadata = {
-  title: "Dashboard - NGOInfo",
-  description: "Manage your grant proposals and funding opportunities",
-};
 
 export default function DashboardPage() {
   const router = useRouter();

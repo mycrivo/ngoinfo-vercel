@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
-
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card } from '@/features/ui/Card';
@@ -14,11 +12,6 @@ import { getOpportunityById } from '@/mocks/data/opportunities';
  * Placeholder for proposal generation flow.
  * Full implementation in V6.
  */
-
-export const metadata = {
-  title: "GrantPilot - NGOInfo",
-  description: "AI-powered grant proposal generation",
-};
 
 function GrantPilotContent() {
   const searchParams = useSearchParams();

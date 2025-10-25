@@ -45,7 +45,6 @@ function checkAuth(req: NextRequest): {
   const sessionCookie = req.cookies.get("dev-session-token");
   const authenticated = !!sessionCookie?.value;
   
-  const isDev = process.env.NODE_ENV === "development";
   const enforceGuards = areGuardsEnabled();
   
   // Log decision (visible in dev console)

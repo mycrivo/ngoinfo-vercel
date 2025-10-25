@@ -13,8 +13,10 @@ export async function http<T>(
       throw { code: `HTTP_${res.status}`, message: text || res.statusText } as HttpError;
     }
     return (await res.json()) as T;
-  } catch (e: any) {
-    if (e.name === "AbortError") throw { code: "TIMEOUT", message: "Request timed out" } as HttpError;
+  } catch (e: unknown) {
+    if (e && typeof e === "object" && "name" in e && e.name === "AbortError") {
+      throw { code: "TIMEOUT", message: "Request timed out" } as HttpError;
+    }
     throw e as HttpError;
   } finally {
     clearTimeout(t);

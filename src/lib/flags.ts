@@ -120,7 +120,7 @@ export function isFlagEnabled(flag: keyof FeatureFlags): boolean {
  */
 export function getEnabledFlags(): string[] {
   return Object.entries(flags)
-    .filter(([_, value]) => value === true)
+    .filter(([_key, value]) => value === true)
     .map(([key]) => key);
 }
 

@@ -50,7 +50,6 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
       errorMessage,
       fullWidth = false,
       className = "",
-      ...restProps
     } = props;
 
     const inputClassName = [
@@ -69,7 +68,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
 
     const renderInput = () => {
       if ("variant" in props && props.variant === "textarea") {
-        const { variant, options, ...textareaProps } = props as TextareaProps;
+        const { variant: _variant, options: _options, ...textareaProps } = props as TextareaProps;
         return (
           <textarea
             ref={ref as React.Ref<HTMLTextAreaElement>}
@@ -83,7 +82,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
       }
 
       if ("variant" in props && props.variant === "select") {
-        const { variant, options, ...selectProps } = props as SelectProps;
+        const { variant: _variant, options, ...selectProps } = props as SelectProps;
         return (
           <select
             ref={ref as React.Ref<HTMLSelectElement>}
@@ -101,7 +100,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElem
         );
       }
 
-      const { variant = "text", options, ...inputProps } = props as TextInputProps;
+      const { variant = "text", options: _options, ...inputProps } = props as TextInputProps;
       return (
         <input
           ref={ref as React.Ref<HTMLInputElement>}

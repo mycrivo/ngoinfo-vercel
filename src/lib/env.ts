@@ -54,7 +54,6 @@ const serverSchema = z.object({
 function validateEnv() {
   try {
     const isServer = typeof window === "undefined";
-    const isDev = process.env.NODE_ENV !== "production";
 
     // Client-side validation
     const clientEnv = {

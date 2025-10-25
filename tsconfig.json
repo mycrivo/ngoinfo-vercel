@@ -3,19 +3,13 @@
     "target": "ES2022",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@features/*": ["features/*"],
-      "@ui/*": ["ui/*"],
-      "@lib/*": ["lib/*"],
-      "@services/*": ["services/*"],
-      "@types/*": ["types/*"]
+      "@/*": ["src/*"]
     },
     "jsx": "preserve",
     "allowJs": true,

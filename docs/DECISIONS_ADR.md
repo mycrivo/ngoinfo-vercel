@@ -860,3 +860,94 @@ monetisation:billing_portal_opened
 - [SaaS Pricing Best Practices](https://www.priceintelligently.com/blog/saas-pricing-models)
 
 
+
+
+## ADR-008: Profiles & Opportunities (UI-first with MSW)
+
+**Date:** 2025-10-06  
+**Status:** Accepted  
+**Context:** V5 clusterprofile wizard, opportunities discovery, and GrantPilot handoff (all UI-first with mock data).
+
+### Motivation
+Before integrating with live backend APIs, we need:
+1. **Profile capture**: Multi-step wizard to collect NGO details for better proposal generation
+2. **Opportunities discovery**: Searchable, filterable list of funding opportunities
+3. **Handoff to GrantPilot**: Smooth transition from opportunity discovery to proposal generation
+4. **Quota gating**: Respect trial and plan limits before allowing proposal generation
+
+### Decision
+**V5A: Profile Wizard**
+- Multi-step form (Basics  Focus  Capacity  Projects)
+- localStorage persistence (will upgrade to backend in integration phase)
+- Profile summary page with edit capability
+- Validation at each step
+
+**V5B: Opportunities**
+- List view with filters (Region, Sector, Deadline, Search)
+- URL-synced filter state (survives page reload)
+- Detail view with full opportunity information
+- Mock data (6 sample opportunities, expandable)
+- Share and save functionality (mocked)
+
+**V5C: Gating & Integration**
+- GrantPilot stub page (full implementation in V6)
+- Quota-gated CTA on opportunity detail
+- Upgrade modal when trial expired or quota exhausted
+- Banner warnings for gated actions
+
+### Technical Approach
+**Mock Data Strategy**
+- mocks/data/opportunities.ts: Static mock opportunities
+- Future: MSW handlers can intercept /api/opportunities if needed
+- localStorage for profile persistence (simple, client-side only)
+
+**URL State Management**
+- useSearchParams() and outer.replace() for filter sync
+- Enables shareable links and back-button support
+
+**Quota Integration**
+- Reuse V4 trial/quota logic (lib/quota.ts)
+- Check getQuotaStatus() and getTrialStatus() before allowing GrantPilot access
+- Show upgrade modal if gated
+
+### Trade-offs
+**Pros:**
+- Rapid UI iteration without backend dependencies
+- Clear separation of concerns (UI vs API)
+- Easy to test filter/search logic
+- Profile wizard provides immediate value
+
+**Cons:**
+- localStorage profiles won't sync across devices (acceptable for MVP)
+- Mock opportunities don't reflect real-time data
+- No server-side validation yet
+
+### Migration Path
+**Phase 1 (Current - V5):** UI-first with mocks
+**Phase 2 (V6+):** Integrate real APIs
+1. Replace mocks/data/opportunities.ts with services/opportunities.ts calling backend
+2. Add profile API service (services/profile.ts) with Zod schema
+3. Move quota validation to backend
+4. Add real-time opportunity updates
+
+### Acceptance Criteria
+- [x] Profile wizard: 4 steps, validation, localStorage persistence
+- [x] Profile summary: read-only view with edit button
+- [x] Opportunities list: filters + URL sync + search
+- [x] Opportunity detail: full info + share + save (mock)
+- [x] GrantPilot CTA: gated by trial/quota
+- [x] Upgrade modal: shows when access denied
+
+### Testing Approach
+- Manual QA checklist in TEST_PLAN.md (V5 section)
+- Profile persistence: fill wizard, reload, verify data
+- Filter state: apply filters, refresh page, verify URL params
+- Quota gating: set quota_remaining=0, verify CTA disabled
+
+### Security Considerations
+- No PII logged in telemetry
+- Profile data stored locally only (encrypted in future)
+- No API keys or secrets in mock data
+- Opportunity links disabled (no external redirects yet)
+
+---

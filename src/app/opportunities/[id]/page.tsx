@@ -1,22 +1,46 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/features/ui/Card';
 import { Button } from '@/features/ui/Button';
 import { Banner } from '@/features/ui/Banner';
+import UpgradeModal from '@/components/UpgradeModal';
 import { getOpportunityById } from '@/mocks/data/opportunities';
+import { getQuotaStatus, getTrialStatus } from '@/lib/quota';
 
 /**
  * Opportunity Detail Page
  * 
  * Full details of a funding opportunity with "Write with GrantPilot" CTA.
- * CTA will be gated by quota in V5C.
+ * CTA is gated by quota and trial status.
  */
 
 export default function OpportunityDetailPage() {
   const params = useParams();
   const router = useRouter();
   const opportunity = getOpportunityById(params.id as string);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<'trial_expired' | 'quota_exceeded'>('quota_exceeded');
+  const [canGenerate, setCanGenerate] = useState(false);
+
+  useEffect(() => {
+    const quota = getQuotaStatus();
+    const trial = getTrialStatus();
+
+    if (!trial.active && trial.started_at) {
+      // Trial expired
+      setCanGenerate(false);
+      setUpgradeReason('trial_expired');
+    } else if (quota.quota_remaining === 0) {
+      // Quota exhausted
+      setCanGenerate(false);
+      setUpgradeReason('quota_exceeded');
+    } else {
+      // Can generate
+      setCanGenerate(true);
+    }
+  }, []);
 
   if (!opportunity) {
     return (
@@ -41,12 +65,22 @@ export default function OpportunityDetailPage() {
   };
 
   const handleGrantPilot = () => {
-    // Will add quota gating in V5C
+    if (!canGenerate) {
+      setShowUpgradeModal(true);
+      return;
+    }
     router.push(`/grantpilot?oppId=${opportunity.id}`);
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 space-y-6">
+    <>
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        reason={upgradeReason}
+      />
+
+      <div className="max-w-4xl mx-auto py-8 space-y-6">
       {/* Header */}
       <div className="space-y-2">
         <Button variant="link" size="sm" onClick={() => router.back()}>
@@ -81,13 +115,35 @@ export default function OpportunityDetailPage() {
 
       {/* Primary CTA */}
       <div className="flex gap-3">
-        <Button variant="primary" size="lg" onClick={handleGrantPilot} fullWidth>
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={handleGrantPilot}
+          disabled={!canGenerate}
+          fullWidth
+        >
           ✨ Write with GrantPilot
+          {!canGenerate && ' (Upgrade Required)'}
         </Button>
         <Button variant="secondary" size="lg" onClick={handleShare}>
           Share
         </Button>
       </div>
+
+      {!canGenerate && (
+        <Banner variant="warning">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span>
+              {upgradeReason === 'trial_expired'
+                ? 'Your trial has expired. Subscribe to generate proposals.'
+                : 'You\'ve used all your proposals. Upgrade to continue.'}
+            </span>
+            <Button variant="secondary" size="sm" onClick={() => router.push('/pricing')}>
+              View Plans
+            </Button>
+          </div>
+        </Banner>
+      )}
 
       {/* Overview */}
       <Card elevation="md" padding="lg">
@@ -148,7 +204,8 @@ export default function OpportunityDetailPage() {
           </Button>
         </div>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
 

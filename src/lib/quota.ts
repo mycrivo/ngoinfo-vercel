@@ -34,6 +34,8 @@ export interface QuotaStatus {
  * Start free trial
  */
 export function startTrial(): void {
+  if (typeof window === 'undefined') return;
+  
   const now = new Date();
   const featuredPlan = getFeaturedPlan();
   const expiresAt = new Date(now.getTime() + featuredPlan.trial_days * 24 * 60 * 60 * 1000);
@@ -60,6 +62,17 @@ export function startTrial(): void {
  * Get current trial status
  */
 export function getTrialStatus(): TrialStatus {
+  if (typeof window === 'undefined') {
+    return {
+      active: false,
+      started_at: null,
+      expires_at: null,
+      hours_remaining: 0,
+      proposals_used: 0,
+      proposals_limit: 0,
+    };
+  }
+  
   const stored = localStorage.getItem(TRIAL_KEY);
   
   if (!stored) {
@@ -102,6 +115,17 @@ export function getTrialStatus(): TrialStatus {
  * Get current quota status
  */
 export function getQuotaStatus(): QuotaStatus {
+  if (typeof window === 'undefined') {
+    return {
+      plan_id: null,
+      proposals_used: 0,
+      proposals_limit: 0,
+      quota_remaining: 0,
+      is_trial: false,
+      can_generate: false,
+    };
+  }
+  
   const trial = getTrialStatus();
   const planId = localStorage.getItem(PLAN_KEY) as PlanId | null;
 
@@ -139,6 +163,8 @@ export function getQuotaStatus(): QuotaStatus {
  * Consume one proposal quota
  */
 export function consumeProposal(): boolean {
+  if (typeof window === 'undefined') return false;
+  
   const status = getQuotaStatus();
 
   if (!status.can_generate) {
@@ -186,6 +212,8 @@ export function consumeProposal(): boolean {
  * Upgrade to paid plan (mock)
  */
 export function upgradePlan(planId: PlanId): void {
+  if (typeof window === 'undefined') return;
+  
   // Clear trial
   localStorage.removeItem(TRIAL_KEY);
   
@@ -204,6 +232,8 @@ export function upgradePlan(planId: PlanId): void {
  * Reset trial (for testing)
  */
 export function resetTrial(): void {
+  if (typeof window === 'undefined') return;
+  
   localStorage.removeItem(TRIAL_KEY);
   localStorage.removeItem(QUOTA_KEY);
   localStorage.removeItem(PLAN_KEY);
@@ -215,6 +245,8 @@ export function resetTrial(): void {
  * Simulate trial expiry (for testing)
  */
 export function simulateTrialExpiry(): void {
+  if (typeof window === 'undefined') return;
+  
   const stored = localStorage.getItem(TRIAL_KEY);
   if (stored) {
     const trial = JSON.parse(stored);

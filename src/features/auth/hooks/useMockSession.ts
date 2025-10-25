@@ -24,10 +24,12 @@ export function useMockSession() {
 
   useEffect(() => {
     // Check for existing session on mount
-    const sessionData = localStorage.getItem(SESSION_KEY);
-    if (sessionData === "true") {
-      const email = localStorage.getItem("gp_session_email");
-      setSession({ isAuthenticated: true, email: email || undefined });
+    if (typeof window !== 'undefined') {
+      const sessionData = localStorage.getItem(SESSION_KEY);
+      if (sessionData === "true") {
+        const email = localStorage.getItem("gp_session_email");
+        setSession({ isAuthenticated: true, email: email || undefined });
+      }
     }
     setIsLoading(false);
   }, []);
@@ -47,16 +49,20 @@ export function useMockSession() {
     }
 
     // Success - set session
-    localStorage.setItem(SESSION_KEY, "true");
-    localStorage.setItem("gp_session_email", email);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SESSION_KEY, "true");
+      localStorage.setItem("gp_session_email", email);
+    }
     setSession({ isAuthenticated: true, email });
 
     return { success: true };
   };
 
   const logout = () => {
-    localStorage.removeItem(SESSION_KEY);
-    localStorage.removeItem("gp_session_email");
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem("gp_session_email");
+    }
     setSession({ isAuthenticated: false });
   };
 

@@ -93,7 +93,7 @@ export function getPlanById(planId: PlanId): Plan | undefined {
  * Get featured plan (default for trial)
  */
 export function getFeaturedPlan(): Plan {
-  return PLANS.find(plan => plan.is_featured) || PLANS[1];
+  return PLANS.find(plan => plan.is_featured) || PLANS[1]!;
 }
 
 /**

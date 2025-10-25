@@ -216,8 +216,3 @@ export default function OpportunityDetailPage() {
   );
 }
 
-export async function generateStaticParams() {
-  // Return empty array for fully dynamic route
-  return [];
-}
-

@@ -1,5 +1,109 @@
 # ADR Log
 
+## ADR-000: Migration to Supabase Auth/DB and Stripe
+
+**Date:** 2025-10-25  
+**Status:** Accepted  
+**Context:** Day 1 backend integration - migrate from mock data to production-ready Supabase and Stripe.
+
+### Motivation
+The prototype used localStorage and mock data for rapid UI iteration. To ship a production application, we need:
+1. Real authentication with Supabase Auth
+2. PostgreSQL database with Row-Level Security (RLS)
+3. Stripe subscription billing
+4. Server-side API routes for privileged operations
+5. Proper secret management (no client exposure)
+
+### Decisions
+
+**Architecture:**
+- Supabase for auth + database (PostgreSQL with RLS)
+- Stripe for subscription management and billing
+- Server Actions and Route Handlers for server-side operations
+- Edge Runtime defaults for performance
+- Client uses anon key only; service role key server-side only
+
+**Database Schema:**
+```sql
+-- users (managed by Supabase Auth)
+-- user_plan_state: tracks subscription, quota, trial
+-- ngo_profiles: organization details
+-- proposals: generated proposal documents
+-- usage_logs: audit trail for quota consumption
+-- plans: pricing tier definitions
+```
+
+**RLS Pattern:**
+- All tables have RLS enabled
+- Users can only read/write their own data
+- Service role bypasses RLS for admin operations
+- Client SDK uses anon key + RLS enforcement
+
+**API Surface:**
+- `/api/proposals/generate` - POST: create proposal (quota-gated)
+- `/api/proposals/download` - GET: signed URL for export
+- `/api/stripe/webhook` - POST: handle subscription events
+- `/auth/callback` - GET: Supabase auth redirect
+
+**Environment Variables:**
+```bash
+# Client-safe
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+NEXT_PUBLIC_SITE_URL
+
+# Server-only (NEVER expose)
+SUPABASE_SERVICE_ROLE_KEY
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+OPENAI_API_KEY
+```
+
+### Trade-offs
+
+**Pros:**
+- Supabase provides auth + DB + storage in one platform
+- RLS ensures data isolation at database level
+- Stripe handles PCI compliance
+- Server Actions simplify data mutations
+- Real-time subscriptions possible with Supabase
+
+**Cons:**
+- Vendor lock-in to Supabase (mitigated by PostgreSQL standard SQL)
+- Stripe fees (2.9% + 30¢) on transactions
+- Cold start latency for Edge Functions
+- Learning curve for RLS policies
+
+### Testing Approach
+**Day 1 Acceptance:**
+1. Sign up → redirected to /dashboard ✓
+2. Trial auto-activated with 2-day expiry ✓
+3. Dashboard shows plan + quota ✓
+4. Generate proposal → quota increments ✓
+5. Quota exhausted → requiresPayment response ✓
+6. Stripe webhook test → 200 OK ✓
+
+### Migration from Mock System
+**Before (V1-V5):**
+- localStorage for session/trial/quota
+- Mock data for opportunities
+- No real payments
+
+**After (Day 1+):**
+- Supabase Auth for sessions
+- PostgreSQL for all state
+- Stripe for real billing
+- Server-side quota enforcement
+
+### References
+- [Supabase Auth Helpers](https://supabase.com/docs/guides/auth/auth-helpers/nextjs)
+- [Supabase RLS](https://supabase.com/docs/guides/auth/row-level-security)
+- [Stripe Webhooks](https://stripe.com/docs/webhooks)
+- [Next.js Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)
+
+---
+
 ## ADR-001: Server-first Architecture
 We default to Server Components to reduce JS shipped to the client and improve security.
 
@@ -902,7 +1006,8 @@ Before integrating with live backend APIs, we need:
 - localStorage for profile persistence (simple, client-side only)
 
 **URL State Management**
-- useSearchParams() and outer.replace() for filter sync
+- useSearchParams() and 
+outer.replace() for filter sync
 - Enables shareable links and back-button support
 
 **Quota Integration**

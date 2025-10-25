@@ -120,6 +120,7 @@ export function isFlagEnabled(flag: keyof FeatureFlags): boolean {
  */
 export function getEnabledFlags(): string[] {
   return Object.entries(flags)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .filter(([_key, value]) => value === true)
     .map(([key]) => key);
 }

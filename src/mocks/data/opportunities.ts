@@ -140,11 +140,13 @@ export function filterOpportunities(params: {
   let filtered = [...MOCK_OPPORTUNITIES];
 
   if (params.region && params.region !== 'all') {
-    filtered = filtered.filter(opp => opp.region === params.region);
+    const region = params.region;
+    filtered = filtered.filter(opp => opp.region === region);
   }
 
   if (params.sector && params.sector !== 'all') {
-    filtered = filtered.filter(opp => opp.sectors.includes(params.sector));
+    const sector = params.sector;
+    filtered = filtered.filter(opp => opp.sectors.includes(sector));
   }
 
   if (params.search) {
@@ -157,8 +159,9 @@ export function filterOpportunities(params: {
   }
 
   if (params.deadline) {
+    const deadline = params.deadline;
     const now = new Date();
-    const days = params.deadline === 'next_30' ? 30 : params.deadline === 'next_60' ? 60 : 90;
+    const days = deadline === 'next_30' ? 30 : deadline === 'next_60' ? 60 : 90;
     const cutoff = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
     filtered = filtered.filter(opp => new Date(opp.deadline) <= cutoff);
   }
